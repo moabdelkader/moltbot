@@ -36,14 +36,13 @@ RUN mkdir -p /home/node/data /home/node/workspace && \
     chown -R node:node /home/node/data /home/node/workspace && \
     chmod -R 755 /home/node/data /home/node/workspace
 
+# ... (نفس الجزء العلوي من الملف السابق دون تغيير)
+
 USER node
 
+# المتغيرات الافتراضية (سيتم استبدالها بما تضعه في Coolify)
 ENV HOST=0.0.0.0
 ENV PORT=18789
-ENV CLAWDBOT_STATE_DIR=/home/node/data
-ENV CLAWDBOT_WORKSPACE_DIR=/home/node/workspace
 
-# شرح الـ CMD:
-# 1. socat: يفتح منفذ 18790 للعالم الخارجي ويرسل البيانات داخلياً لمنفذ 18789
-# 2. node: يشغل البوت كالمعتاد
-CMD ["sh", "-c", "socat TCP-LISTEN:18790,fork,bind=0.0.0.0 TCP:127.0.0.1:18789 & node dist/index.js gateway --port 18789 --allow-unconfigured --token 123456789"]
+# سطر التشغيل المعدل لاستخدام المتغيرات ديناميكياً
+CMD ["sh", "-c", "socat TCP-LISTEN:18790,fork,bind=0.0.0.0 TCP:127.0.0.1:18789 & node dist/index.js gateway --port 18789 --allow-unconfigured --token ${MOLTBOT_GATEWAY_TOKEN:-Medo1996}"]
