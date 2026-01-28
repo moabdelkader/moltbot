@@ -49,4 +49,4 @@ ENV CLAWDBOT_STATE_DIR=/home/node/data
 ENV CLAWDBOT_WORKSPACE_DIR=/home/node/workspace
 
 # تم حذف --host من هنا ليعمل التطبيق بدون أخطاء، وسيعتمد على ENV HOST أعلاه
-CMD ["node", "dist/index.js", "gateway", "--port", "18789", "--allow-unconfigured", "--token", "123456789"]
+CMD ["node", "dist/index.js", "gateway", "--port", "18789", "--address", "0.0.0.0", "--allow-unconfigured", "--token", "123456789"]
