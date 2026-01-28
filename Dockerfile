@@ -43,10 +43,10 @@ RUN mkdir -p /home/node/data /home/node/workspace && \
 USER node
 
 # تعريف المتغيرات كـ ENV بدلاً من CLI Flags لتجنب خطأ "unknown option"
+# تأكد إن المتغيرات دي موجودة قبل الـ CMD
 ENV HOST=0.0.0.0
 ENV MOLTBOT_HOST=0.0.0.0
-ENV CLAWDBOT_STATE_DIR=/home/node/data
-ENV CLAWDBOT_WORKSPACE_DIR=/home/node/workspace
+ENV PORT=18789
 
-# تم حذف --host من هنا ليعمل التطبيق بدون أخطاء، وسيعتمد على ENV HOST أعلاه
-CMD ["node", "dist/index.js", "gateway", "--port", "18789", "--address", "0.0.0.0", "--allow-unconfigured", "--token", "123456789"]
+# هنشغل التطبيق ونمرر له المتغيرات بشكل مباشر في سطر التشغيل
+CMD ["sh", "-c", "HOST=0.0.0.0 PORT=18789 node dist/index.js gateway --port 18789 --allow-unconfigured --token 123456789"]
