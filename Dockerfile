@@ -32,9 +32,22 @@ RUN pnpm ui:build
 
 ENV NODE_ENV=production
 
-# Security hardening: Run as non-root user
-# The node:22-bookworm image includes a 'node' user (uid 1000)
-# This reduces the attack surface by preventing container escape via root privileges
+# --- الجزء المعدل لحل مشكلة الصلاحيات ---
+USER root
+
+# إنشاء المجلدات المطلوبة مسبقاً وتغيير ملكيتها للمستخدم node
+# ده بيضمن إن التطبيق يقدر يكتب جوه المجلدات حتى لو هي Volumes
+RUN mkdir -p /home/node/data /home/node/workspace && \
+    chown -R node:node /home/node/data /home/node/workspace && \
+    chmod -R 755 /home/node/data /home/node/workspace
+
+# العودة للمستخدم node للأمان
 USER node
 
-CMD ["node", "dist/index.js", "gateway", "--port", "18789","--allow-unconfigured"]
+# ضبط المتغيرات لضمان عمل التطبيق على الـ Host الصحيح والمسارات الصحيحة
+ENV MOLTBOT_HOST=0.0.0.0
+ENV CLAWDBOT_STATE_DIR=/home/node/data
+ENV CLAWDBOT_WORKSPACE_DIR=/home/node/workspace
+
+# إضافة --host 0.0.0.0 و --token لضمان تجاوز الـ Bad Gateway وتأمين الدخول
+CMD ["node", "dist/index.js", "gateway", "--port", "18789", "--host", "0.0.0.0", "--allow-unconfigured", "--token", "123456789"]
