@@ -8,13 +8,12 @@ RUN corepack enable
 
 WORKDIR /app
 
-ARG CLAWDBOT_DOCKER_APT_PACKAGES=""
-RUN if [ -n "$CLAWDBOT_DOCKER_APT_PACKAGES" ]; then \
-      apt-get update && \
-      DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends $CLAWDBOT_DOCKER_APT_PACKAGES && \
-      apt-get clean && \
-      rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*; \
-    fi
+# تثبيت الحزم المطلوبة وأداة socat للربط الشبكي
+ARG CLAWDBOT_DOCKER_APT_PACKAGES="socat"
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends $CLAWDBOT_DOCKER_APT_PACKAGES && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 COPY ui/package.json ./ui/package.json
@@ -25,28 +24,26 @@ RUN pnpm install --frozen-lockfile
 
 COPY . .
 RUN CLAWDBOT_A2UI_SKIP_MISSING=1 pnpm build
-# Force pnpm for UI build (Bun may fail on ARM/Synology architectures)
 ENV CLAWDBOT_PREFER_PNPM=1
 RUN pnpm ui:install
 RUN pnpm ui:build
 
 ENV NODE_ENV=production
 
-# --- إصلاح الصلاحيات والبيئة ---
+# --- إصلاح الصلاحيات ---
 USER root
-
-# إعداد المجلدات وضمان ملكية يوزر node لها لحل خطأ EACCES
 RUN mkdir -p /home/node/data /home/node/workspace && \
     chown -R node:node /home/node/data /home/node/workspace && \
     chmod -R 755 /home/node/data /home/node/workspace
 
 USER node
 
-# تعريف المتغيرات كـ ENV بدلاً من CLI Flags لتجنب خطأ "unknown option"
-# تأكد إن المتغيرات دي موجودة قبل الـ CMD
 ENV HOST=0.0.0.0
-ENV MOLTBOT_HOST=0.0.0.0
 ENV PORT=18789
+ENV CLAWDBOT_STATE_DIR=/home/node/data
+ENV CLAWDBOT_WORKSPACE_DIR=/home/node/workspace
 
-# هنشغل التطبيق ونمرر له المتغيرات بشكل مباشر في سطر التشغيل
-CMD ["sh", "-c", "HOST=0.0.0.0 PORT=18789 node dist/index.js gateway --port 18789 --allow-unconfigured --token 123456789"]
+# شرح الـ CMD:
+# 1. socat: يفتح منفذ 18790 للعالم الخارجي ويرسل البيانات داخلياً لمنفذ 18789
+# 2. node: يشغل البوت كالمعتاد
+CMD ["sh", "-c", "socat TCP-LISTEN:18790,fork,bind=0.0.0.0 TCP:127.0.0.1:18789 & node dist/index.js gateway --port 18789 --allow-unconfigured --token 123456789"]
