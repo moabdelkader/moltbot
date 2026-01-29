@@ -35,18 +35,23 @@ RUN mkdir -p /home/node/data /home/node/workspace && \
 
 # ... (نفس الجزء العلوي حتى الوصول لـ USER node)
 
-USER node
+# ... (نفس الجزء العلوي حتى الوصول لـ USER node)
 
-# إعداد المجلدات
+USER node
+WORKDIR /home/node/app
+
+# إنشاء المجلدات وضمان وجودها
 RUN mkdir -p /home/node/data
 
-# إنشاء ملف الإعدادات لإجبار البوت على قبول البروكسي والتوكن
-RUN echo '{"gateway": {"trustedProxies": ["0.0.0.0/0"], "token": "Medo1996"}}' > /home/node/data/config.json
+# إنشاء ملف الإعدادات في المسار الافتراضي (بدون تمريره كـ Flag)
+# سنقوم بحقن الإعدادات في ملف يسمى .moltbot.json أو moltbot.json في مجلد العمل
+RUN echo '{"gateway": {"trustedProxies": ["0.0.0.0/0"], "token": "Medo1996"}}' > /app/moltbot.json
 
 ENV HOST=0.0.0.0
 ENV PORT=18789
 ENV CLAWDBOT_STATE_DIR=/home/node/data
-ENV CLAWDBOT_WORKSPACE_DIR=/home/node/workspace
+# إجبار البوت على رؤية المتغير من البيئة المحيطة كحل أخير بجانب الملف
+ENV MOLTBOT_TRUSTED_PROXIES=0.0.0.0/0
 
-# سطر التشغيل (تأكد من إزالة أي flags قديمة)
-CMD ["sh", "-c", "socat TCP-LISTEN:18790,fork,bind=0.0.0.0 TCP:127.0.0.1:18789 & node dist/index.js gateway --port 18789 --allow-unconfigured --config /home/node/data/config.json"]
+# سطر التشغيل: بسيط جداً لتجنب "unknown option"
+CMD ["sh", "-c", "socat TCP-LISTEN:18790,fork,bind=0.0.0.0 TCP:127.0.0.1:18789 & node dist/index.js gateway --port 18789 --allow-unconfigured --token Medo1996"]
