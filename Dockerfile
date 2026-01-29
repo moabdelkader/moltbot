@@ -44,4 +44,5 @@ ENV CLAWDBOT_STATE_DIR=/home/node/data
 ENV CLAWDBOT_WORKSPACE_DIR=/home/node/workspace
 
 # --- Run ---
-CMD ["sh", "-c", "socat TCP-LISTEN:18790,fork,bind=0.0.0.0 TCP:127.0.0.1:18789 & node dist/index.js gateway --port 18789 --allow-unconfigured --token ${MOLTBOT_GATEWAY_TOKEN:-Medo1996} --trusted-proxy 0.0.0.0/0"]
+# إزالة أي Flags غير معروفة والاعتماد على حقن المتغيرات مباشرة
+CMD ["sh", "-c", "socat TCP-LISTEN:18790,fork,bind=0.0.0.0 TCP:127.0.0.1:18789 & MOLTBOT_TRUSTED_PROXIES=0.0.0.0/0 node dist/index.js gateway --port 18789 --allow-unconfigured --token ${MOLTBOT_GATEWAY_TOKEN:-Medo1996}"]
