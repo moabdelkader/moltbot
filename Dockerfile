@@ -33,16 +33,20 @@ RUN mkdir -p /home/node/data /home/node/workspace && \
     chown -R node:node /home/node/data /home/node/workspace && \
     chmod -R 755 /home/node/data /home/node/workspace
 
+# ... (نفس الجزء العلوي حتى الوصول لـ USER node)
+
 USER node
 
-# --- Environment Variables ---
+# إعداد المجلدات
+RUN mkdir -p /home/node/data
+
+# إنشاء ملف الإعدادات لإجبار البوت على قبول البروكسي والتوكن
+RUN echo '{"gateway": {"trustedProxies": ["0.0.0.0/0"], "token": "Medo1996"}}' > /home/node/data/config.json
+
 ENV HOST=0.0.0.0
 ENV PORT=18789
-# هذا السطر هو الحل لمشكلة الكلاود فلير والـ Pairing
-ENV MOLTBOT_TRUSTED_PROXIES=0.0.0.0/0
 ENV CLAWDBOT_STATE_DIR=/home/node/data
 ENV CLAWDBOT_WORKSPACE_DIR=/home/node/workspace
 
-# --- Run ---
-# إزالة أي Flags غير معروفة والاعتماد على حقن المتغيرات مباشرة
-CMD ["sh", "-c", "socat TCP-LISTEN:18790,fork,bind=0.0.0.0 TCP:127.0.0.1:18789 & MOLTBOT_TRUSTED_PROXIES=0.0.0.0/0 node dist/index.js gateway --port 18789 --allow-unconfigured --token ${MOLTBOT_GATEWAY_TOKEN:-Medo1996}"]
+# سطر التشغيل (تأكد من إزالة أي flags قديمة)
+CMD ["sh", "-c", "socat TCP-LISTEN:18790,fork,bind=0.0.0.0 TCP:127.0.0.1:18789 & node dist/index.js gateway --port 18789 --allow-unconfigured --config /home/node/data/config.json"]
