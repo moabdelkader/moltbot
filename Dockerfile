@@ -37,21 +37,26 @@ RUN mkdir -p /home/node/data /home/node/workspace && \
 
 # ... (نفس الجزء العلوي حتى الوصول لـ USER node)
 
+# ... (نفس الجزء العلوي حتى السطر 55 تقريباً)
+
+# --- Permissions Fix ---
+USER root
+RUN mkdir -p /home/node/data /home/node/workspace /app
+# إنشاء ملف الإعدادات كـ root وضمان المسار الصحيح
+RUN echo '{"gateway": {"trustedProxies": ["0.0.0.0/0"], "token": "Medo1996"}}' > /home/node/data/moltbot.json
+
+# تغيير ملكية كل شيء لمستخدم node
+RUN chown -R node:node /home/node/data /home/node/workspace /app
+RUN chmod -R 755 /home/node/data /home/node/workspace /app
+
 USER node
-WORKDIR /home/node/app
-
-# إنشاء المجلدات وضمان وجودها
-RUN mkdir -p /home/node/data
-
-# إنشاء ملف الإعدادات في المسار الافتراضي (بدون تمريره كـ Flag)
-# سنقوم بحقن الإعدادات في ملف يسمى .moltbot.json أو moltbot.json في مجلد العمل
-RUN echo '{"gateway": {"trustedProxies": ["0.0.0.0/0"], "token": "Medo1996"}}' > /app/moltbot.json
+WORKDIR /app
 
 ENV HOST=0.0.0.0
 ENV PORT=18789
-ENV CLAWDBOT_STATE_DIR=/home/node/data
-# إجبار البوت على رؤية المتغير من البيئة المحيطة كحل أخير بجانب الملف
 ENV MOLTBOT_TRUSTED_PROXIES=0.0.0.0/0
+ENV CLAWDBOT_STATE_DIR=/home/node/data
+ENV CLAWDBOT_WORKSPACE_DIR=/home/node/workspace
 
-# سطر التشغيل: بسيط جداً لتجنب "unknown option"
+# سطر التشغيل: نستخدم التوكن مباشرة ونحاول تمرير ملف الإعدادات عبر مسار المتغير الافتراضي
 CMD ["sh", "-c", "socat TCP-LISTEN:18790,fork,bind=0.0.0.0 TCP:127.0.0.1:18789 & node dist/index.js gateway --port 18789 --allow-unconfigured --token Medo1996"]
