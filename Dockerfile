@@ -41,5 +41,5 @@ ENV PORT=18789
 ENV CLAWDBOT_STATE_DIR=/home/node/data
 ENV CLAWDBOT_WORKSPACE_DIR=/home/node/workspace
 
-# سطر التشغيل: حقن الإعدادات في ملفين مختلفين + استخدام الخيار المباشر
-CMD ["sh", "-c", "echo '{\"gateway\": {\"trustedProxies\": [\"0.0.0.0/0\"], \"token\": \"Medo1996\"}}' > /home/node/data/config.json && echo '{\"gateway\": {\"trustedProxies\": [\"0.0.0.0/0\"], \"token\": \"Medo1996\"}}' > /home/node/data/moltbot.json && socat TCP-LISTEN:18790,fork,bind=0.0.0.0 TCP:127.0.0.1:18789 & node dist/index.js gateway --port 18789 --token Medo1996 --allow-unconfigured"]
+# سطر التشغيل: لاحظ تغيير "token" إلى "auth": {"token": "..."}
+CMD ["sh", "-c", "echo '{\"gateway\": {\"trustedProxies\": [\"0.0.0.0/0\"], \"auth\": {\"token\": \"Medo1996\"}}}' > /home/node/data/moltbot.json && socat TCP-LISTEN:18790,fork,bind=0.0.0.0 TCP:127.0.0.1:18789 & node dist/index.js gateway --port 18789 --allow-unconfigured"]
