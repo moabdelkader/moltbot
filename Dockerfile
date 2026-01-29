@@ -38,12 +38,11 @@ RUN mkdir -p /home/node/data /home/node/workspace /app && \
 USER node
 WORKDIR /app
 
-# متغيرات البيئة - الحل الوحيد للوثوق في Cloudflare
+# متغيرات البيئة
 ENV HOST=0.0.0.0
 ENV PORT=18789
-ENV MOLTBOT_TRUSTED_PROXIES=0.0.0.0/0
 ENV CLAWDBOT_STATE_DIR=/home/node/data
 ENV CLAWDBOT_WORKSPACE_DIR=/home/node/workspace
 
-# سطر التشغيل: نظيف تماماً من أي Flags تسبب أخطاء
-CMD ["sh", "-c", "socat TCP-LISTEN:18790,fork,bind=0.0.0.0 TCP:127.0.0.1:18789 & node dist/index.js gateway --port 18789 --allow-unconfigured --token Medo1996"]
+# سطر التشغيل الذكي: يقوم بإنشاء ملف الإعدادات لحظة البدء ثم تشغيل البوت
+CMD ["sh", "-c", "echo '{\"gateway\": {\"trustedProxies\": [\"0.0.0.0/0\"], \"token\": \"Medo1996\"}}' > /home/node/data/config.json && socat TCP-LISTEN:18790,fork,bind=0.0.0.0 TCP:127.0.0.1:18789 & node dist/index.js gateway --port 18789 --allow-unconfigured --token Medo1996"]
